@@ -1,0 +1,176 @@
+---
+- name: Bootstrap Kubernetes cluster
+  hosts: all
+  become: yes
+  gather_facts: yes
+
+  vars:
+    pod_network_cidr: "10.244.0.0/16"
+    kube_config_path: /etc/kubernetes/admin.conf
+    cni_manifest: "{{ playbook_dir }}/../manifests/cni.yaml"
+    tinkerbell_manifest: "{{ playbook_dir }}/../manifests/tinkerbell.yaml"
+    argocd_manifest: "https://github.com/argoproj/argo-cd/blob/master/manifests/ha/install.yaml"
+    argocd_values: "{{ playbook_dir }}/../manifests/values-argocd.yaml"
+
+  pre_tasks:
+    # Base Ubuntu system preparation
+    - name: Disable swap immediately
+      ansible.builtin.command: swapoff -a
+      changed_when: false
+
+    - name: Comment out swap entries in fstab
+      ansible.builtin.replace:
+        path: /etc/fstab
+        regexp: '^([^#].*\sswap\s.*)$'
+        replace: '# \1'
+
+    - name: Ensure kernel modules for Kubernetes networking are loaded
+      ansible.builtin.modprobe:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - overlay
+        - br_netfilter
+
+    - name: Persist required modules across reboots
+      ansible.builtin.copy:
+        dest: /etc/modules-load.d/k8s.conf
+        content: |
+          overlay
+          br_netfilter
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Configure sysctl for Kubernetes networking
+      ansible.builtin.copy:
+        dest: /etc/sysctl.d/k8s.conf
+        content: |
+          net.bridge.bridge-nf-call-iptables = 1
+          net.ipv4.ip_forward = 1
+          net.bridge.bridge-nf-call-ip6tables = 1
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Apply sysctl settings
+      ansible.builtin.command: sysctl --system
+      changed_when: false
+
+    # Raspberry Pi specific boot flags (Ubuntu on ARM64 only)
+    - name: Detect Raspberry Pi hardware
+      ansible.builtin.set_fact:
+        is_rpi: "{{ ansible_facts['ansible_product_name'] is search('Raspberry Pi') }}"
+
+    - name: Ensure cgroups are enabled for Raspberry Pi kernel
+      ansible.builtin.lineinfile:
+        path: /boot/firmware/cmdline.txt
+        backrefs: yes
+        regexp: '^(.*)$'
+        line: '\1 cgroup_memory=1 cgroup_enable=memory cgroup_enable=cpuset'
+      when: is_rpi
+      notify: reboot_required
+
+    - name: Reduce GPU memory allocation on Raspberry Pi
+      ansible.builtin.lineinfile:
+        path: /boot/firmware/config.txt
+        regexp: '^gpu_mem='
+        line: 'gpu_mem=16'
+        create: yes
+      when: is_rpi
+      notify: reboot_required
+
+    # Install and configure containerd + kubeadm
+    - name: Include base roles (container runtime + kubeadm setup)
+      include_role:
+        name: geerlingguy.containerd
+
+    - include_role:
+        name: geerlingguy.kubernetes
+      vars:
+        kubernetes_role: control_plane
+        kubernetes_kubeadm_init_config_file: /etc/kubernetes/kubeadm-init.yaml
+        kubernetes_pod_network_cidr: "{{ pod_network_cidr }}"
+        kubernetes_allow_pods_on_master: true
+
+  tasks:
+    - name: Ensure containerd uses systemd cgroup driver
+      ansible.builtin.replace:
+        path: /etc/containerd/config.toml
+        regexp: 'SystemdCgroup\s*=\s*false'
+        replace: 'SystemdCgroup = true'
+      notify: restart_containerd
+
+    - name: Ensure kubeconfig is available to Ansible
+      ansible.builtin.stat:
+        path: "{{ kube_config_path }}"
+      register: conf
+
+    - name: Wait for Kubernetes API to be reachable
+      kubernetes.core.k8s_info:
+        kubeconfig: "{{ kube_config_path }}"
+        kind: Node
+      register: api_check
+      until: api_check.resources is defined
+      retries: 20
+      delay: 15
+
+    - name: Apply CNI manifest
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kube_config_path }}"
+        state: present
+        src: "{{ cni_manifest }}"
+
+    - name: Apply ArgoCD manifest
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kube_config_path }}"
+        state: present
+        src: "{{ argocd_manifest }}"
+
+    - name: Add Argo Helm repo
+      community.kubernetes.helm_repository:
+        name: argo
+        repo_url: https://argoproj.github.io/argo-helm
+
+    - name: Install ArgoCD via Helm
+      community.kubernetes.helm:
+        name: argocd
+        chart_ref: argo/argo-cd
+        release_namespace: argocd
+        create_namespace: true
+        values_files:
+          - "{{ argocd_values }}"
+        kubeconfig: "{{ kube_config_path }}"
+
+    - name: Wait for ArgoCD server to become available
+      kubernetes.core.k8s_info:
+        kubeconfig: "{{ kube_config_path }}"
+        kind: Deployment
+        namespace: argocd
+      register: argocd_deploys
+      until: >
+        argocd_deploys.resources | selectattr('metadata.name','equalto','argocd-server')
+        | selectattr('status.availableReplicas','defined')
+        | selectattr('status.availableReplicas','>','0') | list | length > 0
+      retries: 40
+      delay: 15
+
+    - name: Show cluster nodes
+      kubernetes.core.k8s_info:
+        kubeconfig: "{{ kube_config_path }}"
+        kind: Node
+      register: nodes
+
+    - ansible.builtin.debug:
+        msg: "Cluster nodes: {{ nodes.resources | map(attribute='metadata.name') | list }}"
+
+  handlers:
+    - name: reboot_required
+      ansible.builtin.reboot:
+        msg: "Rebooting to apply Raspberry Pi kernel or GPU configuration"
+        reboot_timeout: 600
+
+    - name: restart_containerd
+      ansible.builtin.systemd:
+        name: containerd
+        state: restarted

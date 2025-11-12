@@ -28,42 +28,47 @@
 [//]: # (Must be less than 120 characters)
 [//]: # (Must match GitHub's description)
 
-Our Kubernetes Lab
+Build the Kubernetes Lab from empty metal
 
 [//]: # (Long Description)
 [//]: # (OPTIONAL)
 [//]: # (Must not have its own title)
 [//]: # (A detailed description of the repo)
 
-
+Uses Ansible to build an MVP controller, so that Cluster API and Tinkerbell can take over.
 
 ## Table of Contents
 
 [//]: # (REQUIRED)
-[//]: # (Delete as appropriate)
+[//]: # (TOCGEN_TABLE_OF_CONTENTS_START)
 
 1. [Security](#security)
 1. [Background](#background)
 1. [Install](#install)
 1. [Usage](#usage)
-1. [Any extra sections as required]
 1. [Documentation](#documentation)
 1. [Repository Configuration](#repository-configuration)
-1. [API](#api)
-1. [Maintainers](#maintainers)
-1. [Thanks](#thanks)
 1. [Contributing](#contributing)
 1. [License](#license)
+    1. [Code](#code)
+    1. [Non-code content](#non-code-content)
 
-[//]: # (## Security)
+[//]: # (TOCGEN_TABLE_OF_CONTENTS_END)
+
+## Security
 [//]: # (OPTIONAL)
 [//]: # (May go here if it is important to highlight security concerns.)
 
+Ansible uses obvious passwords, but these are replaced by SSH key auth once Kubernetes takes over.
 
-
-[//]: # (## Background)
+## Background
 [//]: # (OPTIONAL)
 [//]: # (Explain the motivation and abstract dependencies for this repo)
+
+Running your own metal has traditionally meant herding kittens. We wanted to keep the cloud native "feel", so it should
+be as easy to replace a physical node as it is to replace a virtual one.
+
+We, therefore, needed a way to provision that metal reliably and repeatably.
 
 ## Install
 
@@ -71,13 +76,31 @@ Our Kubernetes Lab
 [//]: # (OPTIONAL IF documentation repo)
 [//]: # (ELSE REQUIRED)
 
+You will need,
+- to install,
+  - OpenTofu
+  - Ansible
+- A spare computer
 
+Your spare computer will go through the following stages,
+1. Ansible will make it a Kubernetes Controller
+2. Ansible will install Cluster API and Tinkerbell into the (currently single node) cluster.
+3. Tinkerbell will provision the rest of the metal
+4. Tinkerbell will reprovision the initial computer as a worker
+
+From this point, Tinkerbell has ownership over all metal and is configured by Cluster API. This means we end up with
+zero Ansible in use in our live cluster, which, from a "traditional" perspective, is remarkable. 
 
 ## Usage
 [//]: # (REQUIRED)
 [//]: # (Explain what the thing does. Use screenshots and/or videos.)
 
-
+To build the cluster from nothing,
+1. Install Ubuntu server on a computer, setting the credentials to
+    - Username: ubuntu
+    - password: bootstrap
+1. Connect all hosts to the kubernetes-lab VLAN
+1. run `bash/cluster_build.sh`
 
 [//]: # (Extra sections)
 [//]: # (OPTIONAL)
