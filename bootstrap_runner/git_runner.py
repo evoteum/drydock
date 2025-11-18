@@ -1,5 +1,3 @@
-# python/git_ops.py
-
 import os
 import subprocess
 from pathlib import Path

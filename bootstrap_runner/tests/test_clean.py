@@ -1,11 +1,10 @@
 import os
-import shutil
 import tempfile
-from unittest.mock import patch, call
+from unittest.mock import patch
 
 import pytest
 
-from python.clean import run_cleanup, CleanupError
+from bootstrap_runner.clean import run_cleanup, CleanupError
 
 
 def create_fake_infra(tmp_dir: str):
@@ -41,19 +40,17 @@ def test_cleanup_runs_tofu_and_removes_directory(mock_run):
     # Expectations about subprocess calls
     # Ensure tofu was called with the expected arguments.
     mock_run.assert_called_once()
-    assert "tofu" in mock_run.call_args[0][0], (
-        "Expected cleanup to run a tofu command, but it did not."
-    )
+    assert (
+        "tofu" in mock_run.call_args[0][0]
+    ), "Expected cleanup to run a tofu command, but it did not."
 
     # The directory should be gone
-    assert not os.path.exists(tmp_dir), (
-        "Cleanup did not remove the temporary directory."
-    )
+    assert not os.path.exists(
+        tmp_dir
+    ), "Cleanup did not remove the temporary directory."
 
     # The function should return a success indicator
-    assert result.success is True, (
-        "Cleanup did not return a success result."
-    )
+    assert result.success is True, "Cleanup did not return a success result."
 
 
 @patch("python.clean.subprocess.run")
@@ -85,6 +82,6 @@ def test_cleanup_handles_tofu_failure(mock_run):
         run_cleanup(tmp_dir)
 
     # Directory should still be removed even on failure.
-    assert not os.path.exists(tmp_dir), (
-        "Cleanup should remove the temp directory even on tofu failure."
-    )
+    assert not os.path.exists(
+        tmp_dir
+    ), "Cleanup should remove the temp directory even on tofu failure."

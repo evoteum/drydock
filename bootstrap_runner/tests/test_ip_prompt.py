@@ -1,6 +1,5 @@
 import pytest
-from python.ip_prompt import prompt_for_ip
-from python.environment import InvalidIPAddressError
+from bootstrap_runner.ip_prompt import prompt_for_ip
 
 
 def test_prompt_for_ip_accepts_valid_address():
@@ -27,10 +26,7 @@ def test_prompt_for_ip_rejects_invalid_address_and_retries():
     An invalid IP should result in an error message and a retry prompt.
     The function should only return once a valid address is provided.
     """
-    inputs = iter([
-        "this-is-not-an-ip",  # invalid
-        "192.168.8.50"        # valid
-    ])
+    inputs = iter(["this-is-not-an-ip", "192.168.8.50"])  # invalid  # valid
     outputs = []
 
     def fake_input():
@@ -57,12 +53,14 @@ def test_prompt_for_ip_handles_multiple_failures_before_success():
     Even if the operator enters several invalid addresses,
     the function should continue politely prompting until success.
     """
-    inputs = iter([
-        "",                     # empty
-        "999.999.999.999",      # nonsense
-        "hello computer",       # still not an IP
-        "10.0.0.10"             # valid at last
-    ])
+    inputs = iter(
+        [
+            "",  # empty
+            "999.999.999.999",  # nonsense
+            "hello computer",  # still not an IP
+            "10.0.0.10",  # valid at last
+        ]
+    )
     outputs = []
 
     def fake_input():
@@ -77,9 +75,9 @@ def test_prompt_for_ip_handles_multiple_failures_before_success():
 
     # Ensure multiple errors were reported
     error_lines = [line for line in outputs if "Invalid IP address" in line]
-    assert len(error_lines) == 3, (
-        "Expected three invalid IP warnings, one for each failed attempt"
-    )
+    assert (
+        len(error_lines) == 3
+    ), "Expected three invalid IP warnings, one for each failed attempt"
 
     # The operator should indeed be asked to try again each time
     retry_lines = [line for line in outputs if "Please try again" in line]

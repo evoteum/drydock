@@ -12,7 +12,7 @@ def real_fetch_kubeconfig(
     local_output_path: str,
     remote_path: str = "/home/ubuntu/.kube/config",
     user: str = "ubuntu",
-    password: str = "bootstrap"
+    password: str = "bootstrap",
 ):
     """
     Fetch the kubeconfig from the newly bootstrapped node and store it locally.
@@ -31,22 +31,25 @@ def real_fetch_kubeconfig(
 
     # Ensure sshpass is installed
     try:
-        subprocess.run(["sshpass", "-V"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    except FileNotFoundError:
-        raise KubeconfigFetchError(
-            "sshpass is required but is not installed."
+        subprocess.run(
+            ["sshpass", "-V"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
+    except FileNotFoundError:
+        raise KubeconfigFetchError("sshpass is required but is not installed.")
 
     parent = os.path.dirname(local_output_path)
     if parent and not os.path.exists(parent):
         os.makedirs(parent, exist_ok=True)
 
     scp_command = [
-        "sshpass", "-p", password,
+        "sshpass",
+        "-p",
+        password,
         "scp",
-        "-o", "StrictHostKeyChecking=no",
+        "-o",
+        "StrictHostKeyChecking=no",
         f"{user}@{machine_ip}:{remote_path}",
-        local_output_path
+        local_output_path,
     ]
 
     try:

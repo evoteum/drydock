@@ -1,7 +1,7 @@
 import os
 import pytest
 
-from python.environment import (
+from bootstrap_runner.environment import (
     validate_environment,
     validate_ip_address,
     EnvironmentValidationError,
@@ -26,6 +26,7 @@ def set_valid_env():
 # ---------------------------------------------------------------------------
 # Environment validation tests
 # ---------------------------------------------------------------------------
+
 
 def test_validate_environment_succeeds_with_all_variables_present():
     """Environment validation should return True when all variables exist."""
@@ -60,6 +61,7 @@ def test_validate_environment_fails_if_only_some_variables_present():
 # IP address validation tests
 # ---------------------------------------------------------------------------
 
+
 def test_validate_ip_address_accepts_valid_ipv4():
     """A correct IPv4 address should pass and return a normalised string."""
     ip = "192.168.8.50"
@@ -74,9 +76,9 @@ def test_validate_ip_address_normalises_weird_but_valid_input():
     """
     ip = "192.168.008.050"  # unusual but technically valid
     result = validate_ip_address(ip)
-    assert result == "192.168.8.50", (
-        "IP should be normalised to a standard dotted-decimal format."
-    )
+    assert (
+        result == "192.168.8.50"
+    ), "IP should be normalised to a standard dotted-decimal format."
 
 
 def test_validate_ip_address_rejects_gibberish():

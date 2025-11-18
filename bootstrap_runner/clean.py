@@ -9,6 +9,7 @@ class CleanupError(Exception):
     Raised when cleanup fails due to tofu apply errors.
     Cleanup still removes the temporary directory.
     """
+
     pass
 
 
@@ -48,8 +49,14 @@ def run_cleanup(tmp_dir: str) -> CleanupResult:
     if not os.path.isdir(tmp_dir):
         return CleanupResult(success=True)
 
-    tofu_args = ["tofu", "apply", "-auto-approve", "-var", "dhcp_enabled=false"]
-
+    tofu_args = [
+        "tofu",
+        "apply",
+        f"-chdir={tmp_dir}/tofu/development",
+        "-auto-approve",
+        "-no-color",
+        "-var=dhcp_enabled=false",
+    ]
     tofu_error = None
 
     try:

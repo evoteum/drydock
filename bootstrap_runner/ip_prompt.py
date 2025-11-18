@@ -1,4 +1,4 @@
-from python.environment import validate_ip_address, InvalidIPAddressError
+from bootstrap_runner.environment import validate_ip_address, InvalidIPAddressError
 
 
 def prompt_for_ip(input_func=input, output_func=print):
@@ -17,10 +17,3 @@ def prompt_for_ip(input_func=input, output_func=print):
         except InvalidIPAddressError as exc:
             output_func(f"Invalid IP address: {exc}")
             output_func("Please try again.\n")
-
-
-def get_ip_for_bootstrap():
-    """
-    The orchestration layer calls this to obtain a validated IP address.
-    """
-    return prompt_for_ip()

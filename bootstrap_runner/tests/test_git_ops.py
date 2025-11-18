@@ -1,6 +1,10 @@
 import os
 import pytest
-from python.git_ops import clone_required_repositories, clone_repository, GitCloneError
+from bootstrap_runner.git_runner import (
+    clone_required_repositories,
+    clone_repository,
+    GitCloneError,
+)
 
 
 def test_clone_repository_success(monkeypatch, tmp_path):
@@ -18,9 +22,7 @@ def test_clone_repository_success(monkeypatch, tmp_path):
 def test_clone_repository_failure(monkeypatch, tmp_path):
     def mock_run(cmd, check, stdout, stderr):
         raise subprocess.CalledProcessError(
-            returncode=1,
-            cmd=cmd,
-            stderr=b"fatal: repository not found"
+            returncode=1, cmd=cmd, stderr=b"fatal: repository not found"
         )
 
     monkeypatch.setattr("subprocess.run", mock_run)

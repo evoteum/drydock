@@ -1,11 +1,13 @@
 import os
 import ipaddress
+from shutil import copyfile
 
 
 class EnvironmentValidationError(Exception):
     """
     Raised when mandatory backend configuration is missing.
     """
+
     pass
 
 
@@ -13,6 +15,7 @@ class InvalidIPAddressError(Exception):
     """
     Raised when an IPv4 address fails validation.
     """
+
     pass
 
 
@@ -41,6 +44,7 @@ def validate_environment() -> bool:
 
     if missing:
         missing_str = ", ".join(missing)
+        copyfile(src=".env.example", dst=".env")
         raise EnvironmentValidationError(
             f"Missing required backend configuration: {missing_str}"
         )
@@ -76,6 +80,4 @@ def validate_ip_address(ip: str) -> str:
         normalised = ipaddress.IPv4Address(ip)
         return str(normalised)
     except Exception as exc:
-        raise InvalidIPAddressError(
-            f"'{ip}' is not a valid IPv4 address"
-        ) from exc
+        raise InvalidIPAddressError(f"'{ip}' is not a valid IPv4 address") from exc
