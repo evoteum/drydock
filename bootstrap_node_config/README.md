@@ -1,7 +1,9 @@
 # Ansible
 
 > [!IMPORTANT]
-> In normal operation, the lab uses zero Ansible. You probably don't need this.
+> You probably don't need this.
+>
+> In normal operation, the lab uses zero Ansible.
 
 We use Ansible only for the initial setup of the very first node in the cluster. After that, Tinkerbell steps in and
 completely reprovisions that same inaugural node. Ansible is then not used until we rebuild the cluster.
