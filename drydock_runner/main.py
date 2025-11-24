@@ -6,17 +6,17 @@ import argparse
 import ipaddress
 
 
-from bootstrap_runner.kubectl_runner import real_kubectl_apply
-from bootstrap_runner.clean import run_cleanup, CleanupError
-from bootstrap_runner.cluster_build import run_bootstrap
-from bootstrap_runner.environment import EnvironmentValidationError
-from bootstrap_runner.orchestration import OrchestrationError
-from bootstrap_runner.git_runner import clone_repositories
-from bootstrap_runner.ansible_runner import (
+from drydock_runner.kubectl_runner import real_kubectl_apply
+from drydock_runner.clean import run_cleanup, CleanupError
+from drydock_runner.cluster_build import run_bootstrap
+from drydock_runner.environment import EnvironmentValidationError
+from drydock_runner.orchestration import OrchestrationError
+from drydock_runner.git_runner import clone_repositories
+from drydock_runner.ansible_runner import (
     real_ansible_playbook,
     real_ansible_requirements,
 )
-from bootstrap_runner.loader import load_config
+from drydock_runner.loader import load_config
 from pathlib import Path
 import stat
 import os

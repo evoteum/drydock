@@ -3,7 +3,7 @@ import os
 import tempfile
 
 # Import the real bootstrap orchestration function.
-from bootstrap_runner import run_bootstrap
+from drydock_runner import run_bootstrap
 
 
 @given("valid environment configuration")

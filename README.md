@@ -8,7 +8,7 @@
 [//]: # (Match repository name)
 [//]: # (REQUIRED)
 
-# kubernetes-lab-bootstrap
+# drydock
 
 [//]: # (Banner)
 [//]: # (OPTIONAL)
@@ -17,13 +17,9 @@
 
 
 > [!IMPORTANT]
-> *Moved to [evoteum/drydock](https://github.com/evoteum/drydock)*
+> **Work in Progress**
 >
-> As work on this project progressed, it became clear that it was
-> - bigger than originally envisaged.
-> - potentially useful outside our own lab environment.
->
-> We therefore decided to give the project its own name, *Drydock*
+> We are working towards the initial version.
 
 [//]: # (Badges)
 [//]: # (OPTIONAL)

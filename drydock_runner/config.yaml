@@ -5,20 +5,29 @@ metadata:
   namespace: drydock-system
 
 spec:
-  network:
-    vlanID: 8
+  network:    vlanID: 8
     cidr: "192.168.8.0/24"
     staticIP:
       address: "192.168.8.10"
       gateway: "192.168.8.1"
       nameservers:
         - "1.1.1.1"
+
         - "8.8.8.8"
 
   discovery:
     enabled: true
     method: "dhcp-scan"
     timeoutSeconds: 120
+
+  clusterLayout:
+    controllers:
+      count: 3
+      architecture: "arm64"
+      strategy: "first-available"
+    workers:
+      architecture: "arm64"
+      strategy: "assign-remaining"
 
   inauguralNode:
     hostname: "inaugural-node"

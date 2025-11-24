@@ -3,7 +3,7 @@ import os
 import tempfile
 
 # Import your real cleanup logic
-from bootstrap_runner import run_cleanup
+from drydock_runner import run_cleanup
 
 
 @given("a temporary working directory exists")

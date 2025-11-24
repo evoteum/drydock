@@ -1,0 +1,111 @@
+apiVersion: drydock.evoteum.com/v1alpha1
+kind: BootstrapConfig
+metadata:
+  name: string
+  namespace: string
+
+spec:
+
+  network:
+
+    discovery:
+      enabled: boolean
+      method: string                  # pxe | dhcp-scan | static-inventory | future methods
+      timeoutSeconds: integer
+
+    provider:
+      type: string                    # unifi | cisco | mikrotik | none
+      config:
+        controller: string            # URL or host
+        username: string
+        password: string
+        site: string
+        apiVersion: string
+
+    # VLAN catalogue (Kubernetes-style list)
+    vlans:
+      - name: string                  # unique VLAN identifier (bootstrap, production, etc)
+        id: integer                   # VLAN ID, required
+        cidr: string                  # e.g. 192.168.20.0/24
+        create: boolean               # whether Drydock should create this VLAN
+        staticIP:                     # static IP of Drydock on that VLAN (optional)
+          address: string
+          gateway: string
+          nameservers:
+            - string
+        dhcp:                         # optional DHCP behaviour per VLAN
+          drydockManagesDHCP: boolean
+          rangeStart: string
+          rangeEnd: string
+
+  clusterLayout:
+
+    controllers:
+      count: integer                  # required
+      architecture: string            # arm64 | amd64 | any
+      os:
+        type: string                  # ubuntu | talos
+        version: string
+        image: string
+      strategy: string                # first-available
+      vlan: string                    # name of VLAN to place controllers into
+
+    standbyControllers:
+      count: integer
+      architecture: string
+      os:
+        type: string
+        version: string
+        image: string
+      strategy: string
+      promoteAfterMinutes: integer
+      vlan: string                    # optional; defaults to controllers' vlan
+
+    promotableWorkers:
+      count: integer
+      architecture: string
+      os:
+        type: string
+        version: string
+        image: string
+      strategy: string
+      promoteAfterMinutes: integer
+      vlan: string                    # optional; defaults to first worker group
+
+    workerGroups:
+      - name: string
+        architecture: string
+        os:
+          type: string
+          version: string
+          image: string
+        strategy: string              # assign-remaining | first-available
+        maxCount: integer
+        vlan: string                  # which VLAN to allocate workers from
+
+  support:
+    enabled: boolean
+    maxNodes: integer
+    cpuLimit: integer
+    fromTime: string                  # ISO8601, for example "23:00"
+    toTime: string                    # ISO8601, for example "06:00"
+
+  inauguralNode:
+    hostname: string
+    sshUser: string
+    sshPassword: string
+
+  bootstrapSources:
+    repositories:
+      config:
+        url: string
+        branch: string
+        paths:
+          kubeadmConfig: string
+          argocdManifest: string
+          argocdValues: string
+
+      infrastructure:
+        url: string
+        paths:
+          discoverPxe: string

@@ -1,16 +1,16 @@
 import os
-from bootstrap_runner.ip_discovery import discover_inaugural_ip
-from bootstrap_runner.environment import (
+from drydock_runner.ip_discovery import discover_inaugural_ip
+from drydock_runner.environment import (
     EnvironmentValidationError,
 )
-from bootstrap_runner.orchestration import (
+from drydock_runner.orchestration import (
     run_orchestration,
     OrchestrationResult,
     OrchestrationError,
 )
-from bootstrap_runner.kubectl_runner import real_kubectl_apply
-from bootstrap_runner.kubeconfig_fetcher import real_fetch_kubeconfig
-from bootstrap_runner.static_ip_assigner import StaticIPAssigner
+from drydock_runner.kubectl_runner import real_kubectl_apply
+from drydock_runner.kubeconfig_fetcher import real_fetch_kubeconfig
+from drydock_runner.static_ip_assigner import StaticIPAssigner
 import ipaddress
 
 
