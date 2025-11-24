@@ -33,14 +33,15 @@
 [//]: # (Must be less than 120 characters)
 [//]: # (Must match GitHub's description)
 
-Build the Kubernetes Lab from empty metal
+ A harbour workshop where bare metal becomes a ready Kubernetes vessel 
 
 [//]: # (Long Description)
 [//]: # (OPTIONAL)
 [//]: # (Must not have its own title)
 [//]: # (A detailed description of the repo)
 
-Uses Ansible to build an MVP controller, so that Cluster API and Tinkerbell can take over.
+Drydock will provide a fully automated, Kubernetes-native bootstrap system that turns bare-metal hosts into a highly
+available Kubernetes cluster with minimal manual intervention and a clean GitOps handover.
 
 ## Table of Contents
 
@@ -64,7 +65,7 @@ Uses Ansible to build an MVP controller, so that Cluster API and Tinkerbell can 
 [//]: # (OPTIONAL)
 [//]: # (May go here if it is important to highlight security concerns.)
 
-Ansible uses obvious passwords, but these are replaced by SSH key auth once Kubernetes takes over.
+Uses obvious host passwords, but these are replaced by SSH key auth once Kubernetes takes over.
 
 ## Background
 [//]: # (OPTIONAL)
@@ -92,27 +93,17 @@ You will need,
 [//]: # (REQUIRED)
 [//]: # (Explain what the thing does. Use screenshots and/or videos.)
 
-To build the cluster from nothing,
-1. Install Ubuntu server on a computer, setting the credentials to
-    - Username: ubuntu
-    - password: bootstrap
-1. Ensure SSH is enabled, as it is disabled by default.
-2. Connect all hosts to the kubernetes-lab VLAN
-2. `cp .env.example .env` and add your real values to it.
+We are aiming for the following workflow:
+
+To build your cluster from bare metal,
+1. Enable network boot on all hosts (often on be default)
+1. Create the specified VLAN
+1. Connect all hosts to the specified VLAN
 1. run:
 
 ```shell
-python3 bootstrap_runner
+python3 drydock_runner
 ```
-
-Your spare computer will go through the following stages,
-1. Ansible will make it a Kubernetes Controller
-2. Ansible will install Cluster API and Tinkerbell into the (currently single node) cluster.
-3. Tinkerbell will provision the rest of the metal
-4. Tinkerbell will reprovision the initial computer as a worker
-
-From this point, Tinkerbell has ownership over all metal and is configured by Cluster API. This means we end up with
-zero Ansible in use in our live cluster, which, from a "traditional" perspective, is remarkable.
 
 [//]: # (Extra sections)
 [//]: # (OPTIONAL)
