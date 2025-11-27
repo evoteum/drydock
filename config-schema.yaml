@@ -13,8 +13,8 @@ spec:
       method: string                  # pxe | dhcp-scan | static-inventory | future methods
       timeoutSeconds: integer
 
-    provider:
-      type: string                    # unifi | cisco | mikrotik | none
+    networkControllerManufacturer:
+      name: string                    # unifi | cisco | mikrotik | none
       config:
         controller: string            # URL or host
         username: string
@@ -37,19 +37,24 @@ spec:
           drydockManagesDHCP: boolean
           rangeStart: string
           rangeEnd: string
+          reserveIPsForDiscoveredNodes: boolean
 
   clusterLayout:
 
     controllers:
       count: integer                  # required
-      architecture: string            # arm64 | amd64 | any
+      architecture: string            # arm64 | amd64
       os:
         type: string                  # ubuntu | talos
         version: string
         image: string
       strategy: string                # first-available
       vlan: string                    # name of VLAN to place controllers into
-
+      hardwareSelectors:
+        cpuMin: integer
+        ramMinGB: integer
+        hasTPM: boolean
+        hasGPU: boolean
     standbyControllers:
       count: integer
       architecture: string
@@ -60,7 +65,11 @@ spec:
       strategy: string
       promoteAfterMinutes: integer
       vlan: string                    # optional; defaults to controllers' vlan
-
+      hardwareSelectors:
+        cpuMin: integer
+        ramMinGB: integer
+        hasTPM: boolean
+        hasGPU: boolean
     promotableWorkers:
       count: integer
       architecture: string
@@ -71,7 +80,11 @@ spec:
       strategy: string
       promoteAfterMinutes: integer
       vlan: string                    # optional; defaults to first worker group
-
+      hardwareSelectors:
+        cpuMin: integer
+        ramMinGB: integer
+        hasTPM: boolean
+        hasGPU: boolean
     workerGroups:
       - name: string
         architecture: string
@@ -82,8 +95,12 @@ spec:
         strategy: string              # assign-remaining | first-available
         maxCount: integer
         vlan: string                  # which VLAN to allocate workers from
-
-  support:
+        hardwareSelectors:
+          cpuMin: integer
+          ramMinGB: integer
+          hasTPM: boolean
+          hasGPU: boolean
+  support:                            # optional opt-in to donate spare compute to Drydock
     enabled: boolean
     maxNodes: integer
     cpuLimit: integer
